@@ -1,0 +1,69 @@
+Processing ValueRecorder library
+
+https://github.com/moumar/processing-value-recorder
+
+== DESCRIPTION:
+
+A version simple processing library which record change of arbitrary instance applet values over time
+
+== FEATURES/PROBLEMS:
+
+* record value changes into a plain-text file
+* play is depending on expected framerate, so you can render slow sketches which doesn't run at full framerate
+* can only record int or float values for now
+
+== SYNOPSIS:
+
+  ValueRecorder recorder ;
+  int x = 0, y = 0;
+  final int FRAMERATE = 30;
+
+  void setup() {
+    size(200, 200);
+    String[] values_to_record = {"x", "y"};
+    recorder = new ValueRecorder(this, FRAMERATE, values_to_record);
+  }
+
+  void draw() {
+    ellipse(x, y, 5, 5);
+  }
+
+  void mousePressed() {
+    if (recorder.isRecording) {
+      recorder.play();
+    } else {
+      recorder.record();
+    }
+  }
+
+  void valueRecorderPlayed(ValueRecorder recorder) {
+    // clearing screen
+    background(0);
+    println("played");
+  }
+
+  void mouseMoved() {
+    if (recorder.isRecording) {
+      x = mouseX;
+      y = mouseY;
+    }
+  }
+
+== REQUIREMENTS:
+
+processing of course :) http://processing.org
+
+== INSTALL:
+
+copy ValueRecorder.pde inside your sketch directory (will create a library later)
+
+== LICENSE:
+
+GPL
+
+== TODO:
+
+* record string values
+* more concise record.txt file format
+* record of values of an arbitrary object
+* record to other file

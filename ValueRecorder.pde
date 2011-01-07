@@ -1,4 +1,5 @@
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 public class ValueRecorder {
   boolean isRecording = false;
@@ -13,6 +14,7 @@ public class ValueRecorder {
   String previous_values_list[];
   String next_values_list[] = null; 
   private int framerate;
+  private Method method_played, method_stopped;
   
   ValueRecorder(PApplet app, int framerate, String[] vals) {
     this.app = app;
@@ -22,6 +24,11 @@ public class ValueRecorder {
       variable_names_to_record.add(vals[i]);
     }
     this.framerate = framerate;
+    try {
+      this.method_played = app.getClass().getMethod("valueRecorderPlayed", new Class[] { ValueRecorder.class });
+    } catch(NoSuchMethodException e) {
+      // no such method, or an error.. which is fine, just ignore
+    }
   }
 
   void draw() {
@@ -39,7 +46,7 @@ public class ValueRecorder {
     output = createWriter("record.txt"); 
     isRecording = true;
     save_values(0);
-    println("start recording");
+    log("start recording");
   }
   
   void stop() {
@@ -54,8 +61,8 @@ public class ValueRecorder {
       } catch(IOException e) {
       }
     }
-    isPlaying = isRecording = isLooping = false; 
-    println("ValueRecorder stopped");
+    isPlaying = isRecording = false; 
+    log("ValueRecorder stopped");
   }
 
   void play() {
@@ -65,7 +72,16 @@ public class ValueRecorder {
     input = createReader("record.txt");
     isPlaying = true;
     restore_values();
-    println("ValueRecorder played");
+    log("ValueRecorder played");
+    if(method_played != null) {
+      try {
+        method_played.invoke(this.app, new Object[] { this });
+      } catch(Exception e) {
+        System.err.println("\nValueRecorder Warning: Disabling valueRecorderPlayed(ValueRecorder recorder) because an unkown exception was thrown and caught");
+        e.printStackTrace();
+        method_played = null;
+      }
+    }
   }
 
   void playLoop() {
@@ -108,8 +124,8 @@ public class ValueRecorder {
       }
     } catch(IOException e) {
       if(isLooping) {
+        log("ValueRecorder looped");
         play();
-        println("loop");
       } else {
         stop();
       }
@@ -169,5 +185,11 @@ public class ValueRecorder {
     } catch (IllegalAccessException e) {
     }
     return 0f;
+  }
+
+  private void log(String s) {
+    if(false) {
+      println(s);
+    }
   }
 }
