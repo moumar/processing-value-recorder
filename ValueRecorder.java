@@ -1,5 +1,12 @@
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.*;
+import java.io.*;
+import processing.core.PApplet;
+
+interface RecorderListener {
+  public void recordEvent();
+}
 
 public class ValueRecorder {
   boolean isRecording = false;
@@ -15,6 +22,7 @@ public class ValueRecorder {
   String next_values_list[] = null; 
   private int framerate;
   private Method method_played, method_stopped;
+  private RecorderListener recorder_listener = null;
   
   ValueRecorder(PApplet app, int framerate, String[] vals) {
     this.app = app;
@@ -31,7 +39,11 @@ public class ValueRecorder {
     }
   }
 
-  void draw() {
+  void addListener(RecorderListener r) {
+    this.recorder_listener = r;
+  }
+
+  public void draw() {
     if (isRecording) {
       save_values();
     } else if (isPlaying) {
@@ -41,9 +53,9 @@ public class ValueRecorder {
   
   void record() {
     stop();
-    this.started_at_millis = millis();
-    this.started_at_frame = frameCount;
-    output = createWriter("record.txt"); 
+    this.started_at_millis = app.millis();
+    this.started_at_frame = app.frameCount;
+    output = app.createWriter("record.txt"); 
     isRecording = true;
     save_values(0);
     log("start recording");
@@ -67,9 +79,9 @@ public class ValueRecorder {
 
   void play() {
     stop();
-    this.started_at_millis = millis();
-    this.started_at_frame = frameCount;
-    input = createReader("record.txt");
+    this.started_at_millis = app.millis();
+    this.started_at_frame = app.frameCount;
+    input = app.createReader("record.txt");
     isPlaying = true;
     restore_values();
     log("ValueRecorder played");
@@ -101,7 +113,7 @@ public class ValueRecorder {
       values_list[i*2 + 1] = getValueOfField(variable_name).toString();
     }
     if (!Arrays.equals(values_list, previous_values_list)) {
-      output.println(millis + "," + join(values_list, ","));
+      output.println(millis + "," + app.join(values_list, ","));
     }
     previous_values_list = values_list;
   }
@@ -116,9 +128,12 @@ public class ValueRecorder {
           String variable_name = next_values_list[i];
           String variable_value = next_values_list[i+1];
           setValueOfField(variable_name, variable_value);
-          print("set " + variable_name + ": " + variable_value + ", ");
+          app.print("set " + variable_name + ": " + variable_value + ", ");
+          if (recorder_listener != null) {
+            recorder_listener.recordEvent();
+          }
         }
-        println("");
+        app.println("");
 
         next_values_list = getNextValues();
       }
@@ -126,7 +141,7 @@ public class ValueRecorder {
       if(isLooping) {
         log("ValueRecorder looped");
         play();
-      } else {
+      } else {
         stop();
       }
     }
@@ -137,21 +152,21 @@ public class ValueRecorder {
       String line = input.readLine();
       if (line == null)
         throw(new EOFException()); 
-      return split(line, ",");
+      return app.split(line, ",");
     } catch(IOException e) {
       throw(new EOFException()); 
     }
   }
 
   private boolean next_event_is_in_the_future() {
-    return relativeMillis() < int(next_values_list[0]);
+    return relativeMillis() < Integer.parseInt(next_values_list[0]);
   }
 
   private int relativeMillis() {
     if(isPlaying) {
-      return int( (frameCount - this.started_at_frame) * 1000f/this.framerate );
+      return (new Float( (app.frameCount - this.started_at_frame) * 1000f/this.framerate ).intValue());
     } else {
-      return millis() - this.started_at_millis;
+      return app.millis() - this.started_at_millis;
     }
   }
   
@@ -161,9 +176,9 @@ public class ValueRecorder {
       Field targetField = targetClass.getDeclaredField(variable_name);
       Class<?> targetObjectFieldType = targetField.getType();
       if (targetObjectFieldType == Float.TYPE) {
-        targetField.setFloat(this.app, float(s));
+        targetField.setFloat(this.app, Float.parseFloat(s));
       } else if (targetObjectFieldType == Integer.TYPE) {
-        targetField.setInt(this.app, int(s));
+        targetField.setInt(this.app, Integer.parseInt(s));
       }
     } catch(NoSuchFieldException e) {
     } catch (IllegalAccessException e) {
@@ -189,7 +204,7 @@ public class ValueRecorder {
 
   private void log(String s) {
     if(false) {
-      println(s);
+      app.println(s);
     }
   }
 }
