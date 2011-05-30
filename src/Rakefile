@@ -1,0 +1,5 @@
+directory "classes"
+task :default => "classes" do
+  sh "cd classes; javac -source 1.5 -target 1.5 -d . -Xlint:unchecked -classpath ~/src/processing-1.5/lib/core.jar ../net/moumar/*.java"
+  sh "cd classes; jar -cf ../../library/valuerecorder.jar ."
+end

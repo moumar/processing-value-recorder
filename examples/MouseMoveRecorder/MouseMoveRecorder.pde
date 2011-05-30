@@ -1,4 +1,6 @@
-ValueRecorder recorder ;
+import net.moumar.valuerecorder.*;
+
+ValueRecorder recorder;
 int x = 0, y = 0;
 final int FRAMERATE = 30;
 
