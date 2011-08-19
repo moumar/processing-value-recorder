@@ -1,7 +1,6 @@
 package net.moumar.valuerecorder;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
 import java.util.*;
 import java.io.*;
 import processing.core.*;
@@ -49,6 +48,11 @@ public class ValueRecorder {
     } catch(NoSuchMethodException e) {
       // no such method, or an error.. which is fine, just ignore
     }
+    try {
+      this.method_stopped = parent.getClass().getMethod("valueRecorderStopped", new Class[] { ValueRecorder.class });
+    } catch(NoSuchMethodException e) {
+      // no such method, or an error.. which is fine, just ignore
+    }
   }
 
   public void draw() {
@@ -61,7 +65,7 @@ public class ValueRecorder {
   
   public void record() {
     try {
-      stop();
+      stop(false);
       this.started_at_millis = parent.millis();
       this.started_at_frame = parent.frameCount;
       isRecording = true;
@@ -73,7 +77,7 @@ public class ValueRecorder {
     }
   }
   
-  public void stop() {
+  public void stop(boolean send_stop_event) {
     if (isRecording) {
       save_values();
       output.flush();
@@ -87,10 +91,23 @@ public class ValueRecorder {
     }
     isPlaying = isRecording = false; 
     log("ValueRecorder stopped");
+    if(send_stop_event && method_stopped != null) {
+      try {
+        method_stopped.invoke(parent, new Object[] { this });
+      } catch(Exception e) {
+        System.err.println("\nValueRecorder Warning: Disabling valueRecorderStopped(ValueRecorder recorder) because an unkown exception was thrown and caught");
+        e.printStackTrace();
+        method_stopped = null;
+      }
+    }
+  }
+
+  public void stop() {
+    stop(true);
   }
 
   public void play() {
-    stop();
+    stop(false);
     this.started_at_millis = parent.millis();
     this.started_at_frame = parent.frameCount;
     try {
