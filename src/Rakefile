@@ -1,5 +1,6 @@
 directory "classes"
 task :default => "classes" do
-  sh "cd classes; javac -source 1.5 -target 1.5 -d . -Xlint:unchecked -classpath ~/src/processing-1.5/lib/core.jar ../net/moumar/*.java"
+  ENV["CLASSPATH"] = RUBY_PLATFORM.index("darwin") ? "/Users/moumar/Applications/Processing.app/Contents/Resources/Java/core.jar" : "~/src/processing/lib/core.jar"
+  sh "cd classes; javac -source 1.5 -target 1.5 -d . -Xlint:unchecked ../net/moumar/*.java"
   sh "cd classes; jar -cf ../../library/valuerecorder.jar ."
 end
