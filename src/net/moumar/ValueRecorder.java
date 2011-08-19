@@ -21,7 +21,7 @@ public class ValueRecorder {
   private String fullPath;
   String previous_values_list[];
   private boolean must_trigger_record_event = false;
-  private boolean debug_mode = true;
+  private boolean debug_mode = false;
   int next_event_ms = 0;
   
   public ValueRecorder(PApplet parent, int framerate, String[] vals) {
