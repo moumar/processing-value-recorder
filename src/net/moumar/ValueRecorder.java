@@ -9,6 +9,7 @@ public class ValueRecorder {
   public boolean isRecording = false;
   public boolean isPlaying = false;
   public boolean isLooping = false;
+  public static String VERSION = "0.1";
   private String current_event = null;
   private PApplet parent;
   private ArrayList <String> variable_names_to_record;
