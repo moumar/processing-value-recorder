@@ -169,7 +169,11 @@ public class ValueRecorder {
         for(int i = 1; i < next_values_list.length; i+=2) {
           String variable_name = next_values_list[i];
           String variable_value = next_values_list[i+1];
-          setValueOfField(variable_name, variable_value);
+          if (variable_name.endsWith("()")) {
+            callFunction(variable_name, variable_value);
+          } else {
+            setValueOfField(variable_name, variable_value);
+          }
           if(debug_mode) {
             parent.print("set " + variable_name + ": " + variable_value + ", ");
           }
@@ -226,6 +230,16 @@ public class ValueRecorder {
     }
   }
   
+  private void callFunction(String function_name, String s) {
+    try {
+      Class<?> targetClass = parent.getClass();
+      Method targetMethod = targetClass.getDeclaredMethod(function_name, new Class[] { String.class });
+      targetMethod.invoke(parent, new Object[] { s });
+    } catch(Exception e) {
+      e.printStackTrace();
+    }
+  }
+
   private void setValueOfField(String variable_name, String s) {
     try {
       Class<?> targetClass = parent.getClass();
