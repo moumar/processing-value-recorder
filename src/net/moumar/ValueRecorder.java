@@ -228,7 +228,7 @@ public class ValueRecorder {
     return line;
   }
 
-  private int relativeMillis() {
+  public int relativeMillis() {
     if(isPlaying) {
       return (new Float( (parent.frameCount - this.started_at_frame) * 1000f/this.framerate ).intValue());
     } else {
