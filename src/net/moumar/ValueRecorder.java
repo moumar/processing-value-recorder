@@ -27,12 +27,12 @@ public class ValueRecorder {
     this(parent, framerate, vals, "record.txt");
   }
 
-  public ValueRecorder(PApplet parent, int framerate, String[] vals, String relativePath) {
+  public ValueRecorder(PApplet parent, int framerate, String[] vals, String path) {
     this.parent = parent;
     //this.parent.registerPre(this);
     this.parent.registerDraw(this);
 
-    fullPath = parent.sketchPath + File.separator + relativePath;
+    fullPath = parent.dataPath(path);
     variable_names_to_record = new ArrayList <String> ();
     for(int i=0; i < vals.length; i++) {
       variable_names_to_record.add(vals[i]);
