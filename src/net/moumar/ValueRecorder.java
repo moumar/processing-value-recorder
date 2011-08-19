@@ -9,6 +9,7 @@ public class ValueRecorder {
   public boolean isRecording = false;
   public boolean isPlaying = false;
   public boolean isLooping = false;
+  private String current_event = null;
   private PApplet parent;
   private ArrayList <String> variable_names_to_record;
   private BufferedReader input;
@@ -133,6 +134,10 @@ public class ValueRecorder {
     play();
     isLooping = true;
   }
+
+  public String currentEvent() {
+    return current_event;
+  }
   
   private void save_values() {
     save_values(relativeMillis());
@@ -160,7 +165,8 @@ public class ValueRecorder {
         return;
 
       while(true) {
-        String[] next_values_list = getNextLine().split(",");
+        String current_event = getNextLine();
+        String[] next_values_list = current_event.split(",");
         next_event_ms = Integer.parseInt(next_values_list[0]);
         if (relativeMillis() < next_event_ms) {
           input.reset();
